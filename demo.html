@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/open-fonts@1.1.1/fonts/inter.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
+    <title>住所分割デモ</title>
+</head>
+<body>
+    <header>
+        <h1>住所分割デモ</h1>
+    </header>
+
+    <h2>住所情報</h2>
+    <p>以下にAmazonアカウントのAddressLine1から3の値（市区町村以降の住所）を入れてください。</p>
+    <p>複数の住所を分割する場合は、改行して入れてください。</p>
+
+    <textarea id="addressLines" name="addressLines"
+              rows="10" cols="100">
+目黒区下目黒１−８−１　アルコタワー
+武蔵村山市伊奈平2丁目2番2号</textarea>
+
+    <br>
+    <br>
+
+    <button id="divideAddress">住所を分割</button>
+
+    <br>
+    <hr>
+    <br>
+
+    <table>
+        <caption>住所分割結果</caption>
+        <thead>
+            <tr>
+                <th>市区町村</th>
+                <th>町域</th>
+                <th>丁目・番地・号</th>
+                <th>建物名・部屋番号</th>
+            </tr>
+        </thead>
+        <tbody id="result">
+
+        </tbody>
+    </table>
+
+    <script src="https://amazonpay-labs.github.io/amazonpay-divider/amazonpayDivider.js"></script>
+    <script>
+        let tbody = document.getElementById('result');
+        document.getElementById('divideAddress').addEventListener('click', function() {
+            tbody.innerHTML = '';
+
+            let addressLines = document.getElementById('addressLines').value.split('\n').filter(Boolean);;
+            addressLines.forEach(addressLine => {
+                var divided = amazonpayDivider.divideAddress(addressLine);
+                if(divided.city) {
+                    var row = document.createElement('tr');
+                    row.appendChild(td(divided.city));
+                    row.appendChild(td(divided.town));
+                    row.appendChild(td(divided.streetNumber));
+                    row.appendChild(td(divided.building));
+                    tbody.appendChild(row);
+                }
+            });
+        });
+
+        function td(value) {
+            var rowData = document.createElement('td');
+            rowData.innerHTML = value;
+            return rowData;
+        }
+    </script>
+</body>
+</html>
