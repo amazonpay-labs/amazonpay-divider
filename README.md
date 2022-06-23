@@ -46,6 +46,6 @@ amazonpayDivider.divideAddress({
 * 本サンプルは、名前情報を区分（姓、名）ごと、住所情報を区分（市区町村、町域、その他）ごとに分割するものですが、利用者が入力した全ての名前または住所を完全に期待通りに分割可能であることを保証するものではありません。
 * 本サンプルの使用に起因または関連する直接的、間接的、結果的、特別、付随的、懲罰的損害賠償（営業権の喪失、事業の中断、利益もしくはデータの逸失、補償費用、コンピュータの障害もしくは故障を含みます。）を含むがこれらに限定されることなく、原因の如何を問わずおよび責任の法理にかかわらず、Amazonが当該損害の可能性につき通知を受けていた場合であっても、Amazonは、いかなる損害に対しても、責任を負いません。
 * なお、本サンプルの作成にあたっては、下記Website等を参考と致しました。
-* mecab-ipadic-neologdの辞書のうち名字データ（https://github.com/neologd/mecab-ipadic-neologd/releases/） (retrieved on 2022/4/20)
-* 人名エントリーデータ（https://github.com/neologd/mecab-ipadic-neologd/blob/master/COPYING#L49） (retrieved on 2022/4/20)
-* 名字辞典（https://myoji.jitenon.jp/info/03.php） retrieved on 2022/4/20
+* [mecab-ipadic-neologdの辞書のうち名字データ](https://github.com/neologd/mecab-ipadic-neologd/releases/) (retrieved on 2022/4/20)
+* [人名エントリーデータ](https://github.com/neologd/mecab-ipadic-neologd/blob/master/COPYING#L49) (retrieved on 2022/4/20)
+* [名字辞典](https://myoji.jitenon.jp/info/03.php) retrieved on 2022/4/20
