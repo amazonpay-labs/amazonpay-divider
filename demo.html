@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
     <title>名前・住所分割デモ</title>
 </head>
+
 <body>
     <header>
         <h1>名前・住所分割デモ</h1>
@@ -17,8 +19,7 @@
     <p>複数の名前を分割する場合は、改行して入れてください。</p>
     <p>デモのため、複数の名前を指定できますが、１つの名前を分割することを想定しています。</p>
 
-    <textarea id="nameLines" name="nameLines"
-              rows="10" cols="100">
+    <textarea id="nameLines" name="nameLines" rows="10" cols="100">
 山田太郎
 千葉花子</textarea>
 
@@ -52,8 +53,7 @@
     <p>addressLine1/2/3 </p>
     <p>複数の住所を分割する場合は、改行して入れてください。</p>
 
-    <textarea id="addressLines" name="addressLines"
-              rows="10" cols="100">
+    <textarea id="addressLines" name="addressLines" rows="10" cols="100">
 目黒区下目黒１−８−１　アルコタワー
 武蔵村山市伊奈平2丁目2番2号</textarea>
 
@@ -81,7 +81,8 @@
         </tbody>
     </table>
 
-    <script src="https://amazonpay-labs.github.io/amazonpay-divider/amazonpayDivider.js"></script>
+    <!-- <script src="https://amazonpay-labs.github.io/amazonpay-divider/amazonpayDivider.js"></script> -->
+    <script src="amazonpayDivider.js"></script>
 
     <!-- 名前分割デモ -->
     <script>
@@ -92,19 +93,19 @@
             return rowData;
         }
 
-        document.getElementById('divideName').addEventListener('click', function() {
+        document.getElementById('divideName').addEventListener('click', function () {
             nameTbody.innerText = '';
 
             let nameLines = document.getElementById('nameLines').value.split('\n').filter(Boolean);
-            nameLines.forEach(function(nameLine) {
-                amazonpayDivider.divideName(nameLine, function(divided) {
+            nameLines.forEach(function (nameLine) {
+                amazonpayDivider.divideName(nameLine, function (divided) {
                     var row = document.createElement('tr');
                     row.appendChild(td(nameLine));
                     row.appendChild(td(divided.lastName));
                     row.appendChild(td(divided.lastNamePronunciation));
                     row.appendChild(td(divided.firstName));
                     nameTbody.appendChild(row);
-                })
+                });
             });
 
         });
@@ -113,18 +114,18 @@
     <!-- 住所分割デモ -->
     <script>
         let addressTbody = document.getElementById('divideAddressResult');
-        document.getElementById('divideAddress').addEventListener('click', function() {
+        document.getElementById('divideAddress').addEventListener('click', function () {
             addressTbody.innerHTML = '';
 
             let addressLines = document.getElementById('addressLines').value.split('\n').filter(Boolean);;
-            addressLines.forEach(function(addressLine) {
+            addressLines.forEach(function (addressLine) {
                 var address = addressLine.split(',');
                 amazonpayDivider.divideAddress({
                     addressLine1: address[0],
                     addressLine2: address[1] || '',
                     addressLine3: address[2] || ''
-                }, function(divided) {
-                    if(divided.city) {
+                }, function (divided) {
+                    if (divided.city) {
                         var row = document.createElement('tr');
                         row.appendChild(td(divided.city));
                         row.appendChild(td(divided.town));
@@ -143,4 +144,5 @@
         }
     </script>
 </body>
+
 </html>

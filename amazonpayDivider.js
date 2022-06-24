@@ -90,7 +90,7 @@ var amazonpayDivider = (function () {
         try {
             var streetNumber = _streetNumber();
             var result = streetNumber.divideIfSpecialCases(addressLine1, addressLine2, addressLine3);
-            if(result) {
+            if (result) {
                 callback(trimProps(result));
                 return;
             }
@@ -109,13 +109,13 @@ var amazonpayDivider = (function () {
             }));
 
         } catch (e) {
-            callback({
+            callback(trimProps({
                 success: false,
                 city: addressLine1,
                 town: '',
                 streetNumber: addressLine2,
                 building: addressLine3
-            });
+            }));
         }
 
         function _removeStateOrRegion(addressLine1) {
@@ -185,6 +185,37 @@ var amazonpayDivider = (function () {
             var format2 = chrome + '([0-9０-９]{0,4}番地?[0-9０-９]{0,4}号?([-‐ー−－―ｰ一ノの][0-9０-９]{1,4}){0,2}|([0-9０-９]{1,4}[-‐ー−－―ｰ一ノの]){0,2}[0-9０-９]{1,4}号?)';
             var format3 = '[0-9０-９]+';
 
+            /** addressLine1のsuffixが丁目の場合、divide */
+            function _divideIfSpecialLine1(addressLine1, addressLine2, addressLine3) {
+                var suffix = _endsWith(addressLine1);
+                if (!suffix.match) return null;
+
+                var cityObj = _divideByCity(suffix.left);
+                return {
+                    success: true,
+                    city: cityObj.city,
+                    town: cityObj.townArea,
+                    streetNumber: suffix.match,
+                    building: [addressLine2, addressLine3]
+                };
+            }
+
+            /** addressLine2のprefixが丁目の場合、divide */
+            function _divideIfSpecialLine2(addressLine1, addressLine2, addressLine3) {
+                var prefix = _startsWith(addressLine2);
+                if (!prefix.match) return null;
+
+                var cityObj = _divideByCity(addressLine1);
+                var chromeObj = _divideByChrome(cityObj.townArea.trim()); // addressLine1に丁目までを記述する住所に対応
+                return {
+                    success: true,
+                    city: cityObj.city,
+                    town: chromeObj.match ? chromeObj.left : cityObj.townArea, // addressLine1に丁目までを記述する場合、丁目を取り除きtownとする
+                    streetNumber: [chromeObj.match, prefix.match],
+                    building: [prefix.right, addressLine3]
+                };
+            }
+
             function _startsWith(addressLine) {
                 return _divideBy('^' + format2, addressLine);
             }
@@ -210,33 +241,8 @@ var amazonpayDivider = (function () {
 
             return {
                 divideIfSpecialCases: function (addressLine1, addressLine2, addressLine3) {
-                    var suffix = _endsWith(addressLine1);
-                    if (suffix.match) {
-                        var cityObj = _divideByCity(suffix.left);
-                        return {
-                            success: true,
-                            city: cityObj.city,
-                            town: cityObj.townArea,
-                            streetNumber: suffix.match,
-                            building: [addressLine2, addressLine3]
-                        };
-                    }
-
-                    var prefix = _startsWith(addressLine2);
-                    if (prefix.match) {
-                        var cityObj = _divideByCity(addressLine1);
-                        var chromeObj = _divideByChrome(cityObj.townArea.trim()); // addressLine1に丁目までを記述する住所に対応
-
-                        return {
-                            success: true,
-                            city: cityObj.city,
-                            town: chromeObj.match ? chromeObj.left : cityObj.townArea, // addressLine1に丁目までを記述する場合、丁目を取り除きtownとする
-                            streetNumber: [chromeObj.match, prefix.match],
-                            building: [prefix.right, addressLine3]
-                        };
-                    }
-
-                    return null;
+                    return _divideIfSpecialLine1(addressLine1, addressLine2, addressLine3)
+                        || _divideIfSpecialLine2(addressLine1, addressLine2, addressLine3);
                 },
                 divide: function (addressLines) {
                     var streetNumberRegexps = [
