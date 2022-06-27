@@ -66,11 +66,55 @@ var amazonpayDivider = (function () {
         }();
     }
 
-    function trimProps(obj) {
+    var kanjiToNum = function () {
+        var prime_table = { "０": 0, "〇": 0, "一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9 };
+        var sub_table = { "十": 10, "百": 100, "千": 1000 };
+        var unit_table = { "万": 10000, "億": 100000000 };
+
+        var primesReg = new RegExp("[" + Object.keys(prime_table) + "]", "g");
+        var unitsReg = new RegExp("[" + Object.keys(sub_table).concat(Object.keys(unit_table)).join('') + "]");
+
+        return function (kanji) {
+            if (unitsReg.test(kanji)) {
+                var obj = Array.prototype.reduce.call(kanji, function (o, cur) {
+                    var r;
+                    if (r = prime_table[cur]) {
+                        o.prime = r;
+                    } else if (r = sub_table[cur]) {
+                        o.subtotal += (o.prime || 1) * r;
+                        o.prime = 0;
+                    } else if (r = unit_table[cur]) {
+                        o.total += (o.subtotal + o.prime) * r;
+                        o.subtotal = o.prime = 0;
+                    }
+                    return o;
+                }, { total: 0, subtotal: 0, prime: 0 });
+                return "" + (obj.total + obj.subtotal + obj.prime);
+            } else {
+                return kanji.replace(primesReg, function (s) {
+                    return prime_table[s];
+                });
+            }
+        }
+    }();
+
+    function convertHalfWidthChar(str) {
+        return str.replace(
+            /[〇一二三四五六七八九十百千万]+/g, function (s) {
+                return kanjiToNum(s);
+            }).replace(/[０-９]/g, function (s) {
+                return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+            }).replace(/丁目[東西南北]?|丁|番耕?地|番|号|地割|-|‐|ー|−|－|―|ｰ|ノ|の/g, '-').replace(/-$/, '');
+    }
+
+    function convertProps(obj) {
         for (var p in obj) {
             var v = obj[p];
             if (typeof (v) === "string") obj[p] = v.trim();
             else if (Array.isArray(v)) obj[p] = v.map(function (e) { return e.trim() }).join('');
+
+            if (p === 'streetNumber')
+                obj[p] = convertHalfWidthChar(obj[p]);
         }
         return obj;
     }
@@ -91,7 +135,7 @@ var amazonpayDivider = (function () {
             var streetNumber = _streetNumber();
             var result = streetNumber.divideIfSpecialCases(addressLine1, addressLine2, addressLine3);
             if (result) {
-                callback(trimProps(result));
+                callback(convertProps(result));
                 return;
             }
 
@@ -100,7 +144,7 @@ var amazonpayDivider = (function () {
 
             var streetNumberObj = streetNumber.divide(townObj.streetNumberArea);
 
-            callback(trimProps({
+            callback(convertProps({
                 success: true,
                 city: cityObj.city,
                 town: townObj.town || streetNumberObj.town,
@@ -109,7 +153,7 @@ var amazonpayDivider = (function () {
             }));
 
         } catch (e) {
-            callback(trimProps({
+            callback(convertProps({
                 success: false,
                 city: addressLine1,
                 town: '',
