@@ -71,9 +71,8 @@ var amazonpayDivider = (function () {
         var sub_table = { "十": 10, "百": 100, "千": 1000 };
         var unit_table = { "万": 10000, "億": 100000000 };
 
-        var primesReg = new RegExp("[" + Object.keys(prime_table) + "]", "g");
+        var primesReg = new RegExp("[" + Object.keys(prime_table).join('') + "]", "g");
         var unitsReg = new RegExp("[" + Object.keys(sub_table).concat(Object.keys(unit_table)).join('') + "]");
-
         return function (kanji) {
             if (unitsReg.test(kanji)) {
                 var obj = Array.prototype.reduce.call(kanji, function (o, cur) {
