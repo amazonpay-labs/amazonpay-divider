@@ -3,6 +3,7 @@
 ## amazonpay-dividerでできること
 * [Amazon Payで取得可能な名前情報(shippingAddressのName また はbillingAddressのName)](http://amazonpay-integration.amazon.co.jp/amazonpay-faq-v2/detail.html?id=QA-8)を「姓」「名」に分割します。また、「姓」の代表的な読みを取得できます。
 * [Amazon Payで取得可能な住所情報(AddressLine1から3)](http://amazonpay-integration.amazon.co.jp/amazonpay-faq-v2/detail.html?id=QA-8)を「市区町村」「町域」「丁目・番地・号」「建物名」に分割します。
+* 「丁目・番地・号」は、半角数字と半角ハイフンに自動変換します。（例. 「十三丁目四十三番地１ー二三」と登録されている場合、「13-43-1-23」へ変換）
 
 ## デモ
 [demo.html](https://amazonpay-labs.github.io/amazonpay-divider/demo.html)より、名前・住所分割のイメージを確認できます。
