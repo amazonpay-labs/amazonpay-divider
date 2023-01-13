@@ -223,6 +223,7 @@ var amazonpayDivider = (function () {
 
         function _streetNumber() {
             var chrome = '[一二三四五六七八九十0-9０-９]{1,4}([-‐ー−－―ｰ一ノの]|丁目[東西南北]?)';
+            var roomNumber = /[0-9０-９]+(号[棟室]|番館)/;
 
             var format1 = '第?(([一二三四五六七八九十百千万0-9０-９]+|[ABCＡＢＣ])(丁目[東西南北]?|丁|番耕?地|番|号|地割|-|‐|ー|−|－|―|ｰ|ノ|の)){1,3}[東西南北]?(([0-9０-９]+|[一二三四五六七八九十百千万]+)|(丁目|丁|番地|番|号地?|-|‐|ー|−|－|―|ｰ|ノ|の){1,2})*';
             var format2 = chrome + '([0-9０-９]{0,4}番地?[0-9０-９]{0,4}号?([-‐ー−－―ｰ一ノの][0-9０-９]{1,4}){0,2}|([0-9０-９]{1,4}[-‐ー−－―ｰ一ノの]){0,2}[0-9０-９]{1,4}号?)';
@@ -245,7 +246,10 @@ var amazonpayDivider = (function () {
 
             /** addressLine2のprefixが丁目の場合、divide */
             function _divideIfSpecialLine2(addressLine1, addressLine2, addressLine3) {
-                var prefix = _startsWith(addressLine2);
+                var roomDivided = _divideByRoomNumber(addressLine2);
+                var streetNumberSofar = roomDivided.match ? roomDivided.left : addressLine2;
+
+                var prefix = _startsWith(streetNumberSofar);
                 if (!prefix.match) return null;
 
                 var cityObj = _divideByCity(addressLine1);
@@ -255,12 +259,12 @@ var amazonpayDivider = (function () {
                     city: cityObj.city,
                     town: chromeObj.match ? chromeObj.left : cityObj.townArea, // addressLine1に丁目までを記述する場合、丁目を取り除きtownとする
                     streetNumber: [chromeObj.match, prefix.match],
-                    building: [prefix.right, addressLine3]
+                    building: [prefix.right, roomDivided.match, roomDivided.right, addressLine3]
                 };
             }
 
             function _startsWith(addressLine) {
-                return _divideBy('^' + format2, addressLine);
+                return _divideBy('^' + format1, addressLine);
             }
 
             function _endsWith(addresLine) {
@@ -282,6 +286,10 @@ var amazonpayDivider = (function () {
                 return _divideBy(chrome, addressLine);
             }
 
+            function _divideByRoomNumber(addressLine) {
+                return _divideBy(roomNumber, addressLine);
+            }
+
             return {
                 divideIfSpecialCases: function (addressLine1, addressLine2, addressLine3) {
                     return _divideIfSpecialLine1(addressLine1, addressLine2, addressLine3)
@@ -291,9 +299,7 @@ var amazonpayDivider = (function () {
                     var streetNumberRegexps = [
                         format1, format2, format3
                     ];
-                    var roomNumberRegexps = /[0-9０-９]+(号[棟室]|番館)/;
-                    var roomDivided = _divideBy(roomNumberRegexps, addressLines);
-
+                    var roomDivided = _divideByRoomNumber(addressLines);
                     var streetNumerLines = roomDivided.match ? roomDivided.left : addressLines;
 
                     for (var i = 0; i < streetNumberRegexps.length; i++) {
