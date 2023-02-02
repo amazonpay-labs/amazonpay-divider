@@ -107,6 +107,7 @@ var amazonpayDivider = (function () {
     }
 
     function convertProps(obj) {
+        var success = true;
         for (var p in obj) {
             var v = obj[p];
             if (typeof (v) === "string") obj[p] = v.trim();
@@ -114,7 +115,11 @@ var amazonpayDivider = (function () {
 
             if (p === 'streetNumber')
                 obj[p] = convertHalfWidthChar(obj[p]);
+
+            if (p != 'building' && !obj[p]) //buiding以外の値がない場合は分割失敗とみなす
+                success = false;
         }
+        obj.success = success;
         return obj;
     }
 
@@ -142,18 +147,22 @@ var amazonpayDivider = (function () {
             var townObj = _divideByTown(cityObj.townArea.concat(addressLine2)); // 丁目・番地・号で正規表現を適用する前に、「の」や「ノ」を含む町名を切り取る
 
             var streetNumberObj = streetNumber.divide(townObj.streetNumberArea);
+            var building = [streetNumberObj.building, addressLine3];
+
+            if (!streetNumberObj.streetNumber) { // 丁目・番地・号がない場合は、addressLine3にある可能性があるため、addressLine3を追加して再度分割
+                streetNumberObj = streetNumber.divide(townObj.streetNumberArea + addressLine3);
+                building = [streetNumberObj.building];
+            }
 
             callback(convertProps({
-                success: true,
                 city: cityObj.city,
                 town: townObj.town || streetNumberObj.town,
                 streetNumber: townObj.town ? [streetNumberObj.town, streetNumberObj.streetNumber] : streetNumberObj.streetNumber,
-                building: [streetNumberObj.building, addressLine3]
+                building: building
             }));
 
         } catch (e) {
             callback(convertProps({
-                success: false,
                 city: addressLine1,
                 town: '',
                 streetNumber: addressLine2,
@@ -236,7 +245,6 @@ var amazonpayDivider = (function () {
 
                 var cityObj = _divideByCity(suffix.left);
                 return {
-                    success: true,
                     city: cityObj.city,
                     town: cityObj.townArea,
                     streetNumber: suffix.match,
@@ -255,7 +263,6 @@ var amazonpayDivider = (function () {
                 var cityObj = _divideByCity(addressLine1);
                 var chromeObj = _divideByChrome(cityObj.townArea.trim()); // addressLine1に丁目までを記述する住所に対応
                 return {
-                    success: true,
                     city: cityObj.city,
                     town: chromeObj.match ? chromeObj.left : cityObj.townArea, // addressLine1に丁目までを記述する場合、丁目を取り除きtownとする
                     streetNumber: [chromeObj.match, prefix.match],
